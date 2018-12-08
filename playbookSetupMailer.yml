@@ -1,4 +1,17 @@
 - hosts: test
   tasks:
-    - name: ping
-      ping:
+    - name: Make sure exim4 service is stopped
+      service:
+        name: exim4
+        enabled: no
+        state: stopped
+      register: command_result
+      failed_when: "command_result is failed and ('find' not in command_result.msg and 'found' not in command_result.msg)"
+
+    - name: Make sure Exim4 is not installed
+      apt:
+        name: exim4
+        state: absent
+        autoremove: yes
+        purge: yes
+
