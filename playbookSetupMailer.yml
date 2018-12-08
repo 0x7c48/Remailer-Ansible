@@ -15,3 +15,23 @@
         autoremove: yes
         purge: yes
 
+    - name: Make sure dependancies present
+      apt:
+        update_cache: yes
+        name: {{item}}
+        state: present
+        with_items:
+          - libsasl2-modules
+          - libsasl2-2
+          - sasl2-bin
+          - postfix
+          - netcat
+
+    - name: Make sure local user exists
+      user:
+        name: user
+        state: present
+        create_home: no
+        password: "$6$mysecretsalt$Gf6liusyPHJn5doRrgRIqmxYe6fSxliL3sTdFacyx93Ti9XQSHGpiMOYEKyefDJz.YYBQn/QeqGznhmCLEDHo/"
+        append: yes
+        groups: sasl,postfix
