@@ -128,9 +128,9 @@
 
     - name: crontab vars
       cronvar:
-          name: MAILTO
-          value: ''
-          state: present
+        name: MAILTO
+        value: '""'
+        state: present
 
     - name: crontab jobs
       cron:
