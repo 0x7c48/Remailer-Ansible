@@ -24,8 +24,27 @@
           - libsasl2-modules
           - libsasl2-2
           - sasl2-bin
-          - postfix
           - netcat
+
+
+#    - name: Set Postfix option hostname
+#      debconf: 
+#        name: postifx 
+#        question: "postfix/mailname" 
+#        value: "sandbox" 
+#        vtype: "string"
+
+    - name: Set Postfix option type as internet site
+      debconf: 
+        name: postfix 
+        question: "postfix/main_mailer_type" 
+        value=: 'Internet Site' 
+        vtype: "string"
+
+    - name: install postfix
+      apt: 
+        name: postfix
+        state: present
 
     - name: Make sure local user exists
       user:
@@ -35,3 +54,5 @@
         password: "$6$mysecretsalt$Gf6liusyPHJn5doRrgRIqmxYe6fSxliL3sTdFacyx93Ti9XQSHGpiMOYEKyefDJz.YYBQn/QeqGznhmCLEDHo/"
         append: yes
         groups: sasl,postfix
+
+    
