@@ -55,4 +55,94 @@
         append: yes
         groups: sasl,postfix
 
+    - name: Make sure folder /var/spool/postfix/var/run/saslauthd exists
+      file:
+        path: /var/spool/postfix/var/run/saslauthd
+        state: directory
+        mode: 0755
+
+    - name: Saslauthd config [mechanism]
+      lineinfile:
+        path: /etc/default/saslauthd
+        state: present
+        regexp: '^MECHANISMS='
+        line: 'MECHANISMS="shadow"'
+
+    - name: Saslauthd config [options]
+      lineinfile:
+        path: /etc/default/saslauthd
+        state: present
+        regexp: '^OPTIONS='
+        line: 'OPTIONS="-c -m /var/spool/postfix/var/run/saslauthd"'
+   
+    - name: Saslauthd config [startup]
+      lineinfile:
+        path: /etc/default/saslauthd
+        state: present
+        regexp: '^START='
+        line: 'START=yes'
+
+    - name: postfix config /etc/postfix/main.cf
+      blockinfile:
+        insertafter: EOF
+        path: /etc/postfix/main.cf
+        state: present
+        block: |
+          #smtp_bind_address=x.x.x.x
+          #SASL
+          smtpd_sasl_local_domain = $myhostname
+          smtpd_sasl_auth_enable = yes
+          broken_sasl_auth_clients = yes
+          smtpd_sasl_authenticated_header = no
+          smtpd_recipient_restrictions = permit_sasl_authenticated, permit_mynetworks, reject_unauth_destination
+          #header_checks = regexp:/etc/postfix/header_checks
+          #
+          #Backoff
+          #
+          #How long a message stays in the queue before it is sent back as undeliverable.(days)
+          maximal_queue_lifetime=1
+          #The minimal amount of time a message won't be looked at,
+          # and the minimal amount of time to stay away from a "dead" destination. (seconds)
+          minimal_backoff_time=600
+          maximal_backoff_time=900
+          bounce_queue_lifetime=0
+          inet_protocols = ipv4
     
+    - name: postfix config /etc/postfix/master.cf
+      lineinfile:
+        path: /etc/postfix/master.cf
+        state: present
+        firstmatch: yes
+        regexp: '^smtp'
+        insertafter: '^smtp'
+        line: '3077    inet    n       -       y       -       -       smtpd'
+    
+    - name: postfix config auth 
+      blockinfile:
+        path: /etc/postfix/sasl/smtpd.conf
+        create: yes
+        state: present
+        block: |
+          pwcheck_method: saslauthd
+          mech_list: PLAIN LOGIN
+
+    - name: crontab vars
+      cronvar:
+          name: MAILTO
+          value: ''
+          state: present
+
+    - name: crontab jobs
+      cron:
+        name: ClearQueue
+        minute: '*/5'
+        job: '/usr/sbin/postsuper -d ALL deferred'
+        state: present
+
+    - name : crontab jobs
+      cron:
+        name: RestartPostfix
+        minute: 0
+        hour: 11
+        weekday: 0
+        job: '/etc/init.d/postfix stop; rm -r /var/spool/postfix/defer/* ; /etc/init.d/postfix start'
