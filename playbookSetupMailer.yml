@@ -18,7 +18,7 @@
     - name: Make sure dependancies present
       apt:
         update_cache: yes
-        name: "{{item}}"
+        name: "{{ item }}"
         state: present
         with_items:
           - libsasl2-modules
