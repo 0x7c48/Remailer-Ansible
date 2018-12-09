@@ -20,11 +20,11 @@
         update_cache: yes
         name: "{{ item }}"
         state: present
-        with_items:
-          - libsasl2-modules
-          - libsasl2-2
-          - sasl2-bin
-          - netcat
+      with_items:
+        - libsasl2-modules
+        - libsasl2-2
+        - sasl2-bin
+        - netcat
 
 
 #    - name: Set Postfix option hostname
