@@ -113,7 +113,7 @@
         path: /etc/postfix/master.cf
         state: present
         firstmatch: yes
-        insertafter: '^smtp'
+        insertafter: '^(smtp|3077).*smtpd$'
         line: '3077    inet    n       -       y       -       -       smtpd'
     
     - name: postfix config auth 
