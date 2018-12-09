@@ -38,7 +38,7 @@
       debconf: 
         name: postfix 
         question: "postfix/main_mailer_type" 
-        value=: 'Internet Site' 
+        value: 'Internet Site' 
         vtype: "string"
 
     - name: install postfix
