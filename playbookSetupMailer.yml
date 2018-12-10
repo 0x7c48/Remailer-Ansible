@@ -67,6 +67,8 @@
         state: present
         regexp: '^MECHANISMS='
         line: 'MECHANISMS="shadow"'
+      notify:
+        - restartSasl
 
     - name: Saslauthd config [options]
       lineinfile:
@@ -74,6 +76,8 @@
         state: present
         regexp: '^OPTIONS='
         line: 'OPTIONS="-c -m /var/spool/postfix/var/run/saslauthd"'
+      notify:
+        - restartSasl
    
     - name: Saslauthd config [startup]
       lineinfile:
@@ -81,6 +85,8 @@
         state: present
         regexp: '^START='
         line: 'START=yes'
+      notify:
+        - restartSasl
 
     - name: postfix config /etc/postfix/main.cf
       blockinfile:
@@ -107,12 +113,16 @@
           maximal_backoff_time=900
           bounce_queue_lifetime=0
           inet_protocols = ipv4
+      notify:
+        - restartPostfix
     
     - name: postfix config /etc/postfix/master.cf
       lineinfile:
         path: /etc/postfix/master.cf
         state: present
         line: '3077    inet    n       -       y       -       -       smtpd'
+      notify:
+        - restartPostfix
     
     - name: postfix config auth 
       blockinfile:
@@ -122,6 +132,8 @@
         block: |
           pwcheck_method: saslauthd
           mech_list: PLAIN LOGIN
+      notify:
+        - restartPostfix
 
     - name: crontab vars
       cronvar:
@@ -143,3 +155,13 @@
         hour: 11
         weekday: 0
         job: '/etc/init.d/postfix stop; rm -r /var/spool/postfix/defer/* ; /etc/init.d/postfix start'
+
+  handlers:
+    - name: restartPostfix
+      service:
+        name: postfix
+        state: restarted
+    - name: restartSasl
+      service:
+        name: saslauthd
+        state: restarted
