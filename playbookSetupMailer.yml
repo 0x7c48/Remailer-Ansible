@@ -1,7 +1,5 @@
 - hosts: test
   tasks:
-    - name: Try to find PTR record
-      #curl -s https://api.hackertarget.com/reversedns/?q=195.24.66.185 | awk '{print $2}'
     - name: Make sure exim4 service is stopped
       service:
         name: exim4
