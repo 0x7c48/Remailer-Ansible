@@ -141,6 +141,7 @@
         path: /etc/postfix/master.cf
         state: present
         line: '3077    inet    n       -       y       -       -       smtpd'
+        insertafter: '^smtp.*smtpd$'
       notify:
         - restartPostfix
     
