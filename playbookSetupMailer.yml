@@ -1,5 +1,7 @@
 - hosts: test
   tasks:
+    - name: Try to find PTR record
+      #curl -s https://api.hackertarget.com/reversedns/?q=195.24.66.185 | awk '{print $2}'
     - name: Make sure exim4 service is stopped
       service:
         name: exim4
@@ -25,6 +27,7 @@
         - libsasl2-2
         - sasl2-bin
         - netcat
+        - curl
 
 
 #    - name: Set Postfix option hostname
@@ -33,7 +36,24 @@
 #        question: "postfix/mailname" 
 #        value: "sandbox" 
 #        vtype: "string"
+#
+    - name: get ptr api
+      uri:
+        url: https://api.hackertarget.com/reversedns/?q={{ ansible_default_ipv4.address }}
+        return_content: yes
+      register: ptr_record
 
+
+    - name: Set Postfix option hostname
+      debconf:
+        name: postifx
+        question: "postfix/mailname"
+        value: "{{ ptr_record.content.split(' ')[1] | regex_replace('\n','')}}"
+        vtype: "string"
+      when: ptr_record.content != "no records found"
+
+
+#
     - name: Set Postfix option type as internet site
       debconf: 
         name: postfix 
